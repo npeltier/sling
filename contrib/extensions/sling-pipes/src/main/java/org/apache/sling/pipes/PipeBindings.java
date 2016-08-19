@@ -144,6 +144,7 @@ public class PipeBindings {
     }
 
     public void addBinding(String name, Object value){
+        log.debug("Adding binding {}={}", name, value);
         getBindings().put(name, value);
     }
 
