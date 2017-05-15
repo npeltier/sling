@@ -16,46 +16,56 @@
  ******************************************************************************/
 package org.apache.sling.xss.impl;
 
-import javax.annotation.Nonnull;
-
+import org.apache.sling.xss.XSSAPI;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Reference;
+import org.apache.felix.scr.annotations.Service;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.adapter.AdapterFactory;
 import org.apache.sling.api.resource.ResourceResolver;
-import org.apache.sling.xss.XSSAPI;
-import org.osgi.framework.Constants;
-import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 
 /**
  * Adapter factory that adapts a {@link ResourceResolver} to a resourceResolver-specific
  * {@link XSSAPI} service.
  */
-@Component(
-        property = {
-                Constants.SERVICE_DESCRIPTION + "=Adapter for the XSSAPI service.",
-                Constants.SERVICE_VENDOR + "=The Apache Software Foundation",
-                AdapterFactory.ADAPTER_CLASSES + "=org.apache.sling.xss.XSSAPI",
-                AdapterFactory.ADAPTABLE_CLASSES + "=org.apache.sling.api.resource.ResourceResolver",
-                AdapterFactory.ADAPTABLE_CLASSES + "=org.apache.sling.api.SlingHttpServletRequest"
-        }
-)
+@Component(metatype = false)
+@Service(AdapterFactory.class)
+@Properties({
+        @Property(name = "service.description", value = "Adapter for the XSSAPI service.")
+})
+@SuppressWarnings("unused")
 public class XSSAPIAdapterFactory implements AdapterFactory {
-
-    private final Logger LOGGER = LoggerFactory.getLogger(XSSAPIAdapterFactory.class);
+    private static final Logger log = LoggerFactory.getLogger(XSSAPIAdapterFactory.class);
+    private static final Class<XSSAPI> XSSAPI_CLASS = XSSAPI.class;
+    private static final Class<ResourceResolver> RESOURCE_RESOLVER_CLASS = ResourceResolver.class;
+    private static final Class<SlingHttpServletRequest> SLING_REQUEST_CLASS = SlingHttpServletRequest.class;
 
     @Reference
     XSSAPI xssApi;
 
-    @Override
-    public <AdapterType> AdapterType getAdapter(@Nonnull Object adaptable, @Nonnull Class<AdapterType> type) {
+    @Property(name = "adapters")
+    public static final String[] ADAPTER_CLASSES = {
+            XSSAPI_CLASS.getName()
+    };
+
+    @Property(name = "adaptables")
+    public static final String[] ADAPTABLE_CLASSES = {
+            RESOURCE_RESOLVER_CLASS.getName(),
+            SLING_REQUEST_CLASS.getName()
+    };
+
+    public <AdapterType> AdapterType getAdapter(Object adaptable, Class<AdapterType> type) {
         if (adaptable instanceof ResourceResolver) {
             return getAdapter((ResourceResolver) adaptable, type);
         } else if (adaptable instanceof SlingHttpServletRequest) {
             return getAdapter((SlingHttpServletRequest) adaptable, type);
         } else {
-            LOGGER.warn("Unable to handle adaptable {}", adaptable.getClass().getName());
+            log.warn("Unable to handle adaptable {}", adaptable.getClass().getName());
             return null;
         }
     }
@@ -67,7 +77,7 @@ public class XSSAPIAdapterFactory implements AdapterFactory {
                 return (AdapterType) xssApi.getResourceResolverSpecificAPI(resourceResolver);
             }
         }
-        LOGGER.error(String.format("Unable to adapt resourceResolver to type %s.", type.getName()));
+        log.debug("Unable to adapt resourceResolver to type {}", type.getName());
         return null;
     }
 
@@ -78,7 +88,7 @@ public class XSSAPIAdapterFactory implements AdapterFactory {
                 return (AdapterType) xssApi.getRequestSpecificAPI(request);
             }
         }
-        LOGGER.error(String.format("Unable to adapt request to type %s.", type.getName()));
+        log.debug("Unable to adapt resourceResolver to type {}", type.getName());
         return null;
     }
 }

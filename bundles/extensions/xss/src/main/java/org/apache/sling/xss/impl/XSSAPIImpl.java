@@ -29,8 +29,6 @@ import javax.json.JsonReaderFactory;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-import org.apache.sling.api.SlingHttpServletRequest;
-import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.xss.ProtectionContext;
 import org.apache.sling.xss.XSSAPI;
 import org.apache.sling.xss.XSSFilter;
@@ -467,25 +465,5 @@ public class XSSAPIImpl implements XSSAPI {
     @Nonnull
     public String filterHTML(String source) {
         return xssFilter.filter(ProtectionContext.HTML_HTML_CONTENT, source);
-    }
-
-    // =============================================================================================
-    // JCR-NAMESPACE MANGLING
-    //
-
-    /**
-     * @see org.apache.sling.xss.XSSAPI#getRequestSpecificAPI(org.apache.sling.api.SlingHttpServletRequest)
-     */
-    @Override
-    public XSSAPI getRequestSpecificAPI(final SlingHttpServletRequest request) {
-        return this;
-    }
-
-    /**
-     * @see org.apache.sling.xss.XSSAPI#getResourceResolverSpecificAPI(org.apache.sling.api.resource.ResourceResolver)
-     */
-    @Override
-    public XSSAPI getResourceResolverSpecificAPI(final ResourceResolver resourceResolver) {
-        return this;
     }
 }

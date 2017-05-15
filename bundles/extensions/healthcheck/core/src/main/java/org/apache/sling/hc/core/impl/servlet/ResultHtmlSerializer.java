@@ -81,13 +81,19 @@ public class ResultHtmlSerializer {
         final DateFormat dfLong = new SimpleDateFormat("yyyy-MM-dd HH:mm");
 
         writer.println("<table id=\"healthCheckResults\" cellspacing=\"0\">");
-        writer.println("<thead><tr><th>Health Check</th><th>Status</th><th>Log</th><th colspan=\"2\">Execution Time</th></tr></thead>");
+        writer.println(
+                "<thead><tr><th>Health Check <span style='color:gray'>(tags)</span></th><th>Status</th><th>Log</th><th>Finished At</th><th>Time</th></tr></thead>");
         for (HealthCheckExecutionResult executionResult : executionResults) {
             Result result = executionResult.getHealthCheckResult();
-            writer.println("<tr class=\"" + getClassForStatus(result.getStatus()) + "\" "
-                    + "title=\"Tags: " + StringEscapeUtils.escapeHtml(StringUtils.join(executionResult.getHealthCheckMetadata().getTags(), ",")) + "\">");
-            writer.println("<td><span title=\"" + StringEscapeUtils.escapeHtml(executionResult.getHealthCheckMetadata().getName()) + "\">"
-                    + StringEscapeUtils.escapeHtml(executionResult.getHealthCheckMetadata().getTitle()) + "</span></td>");
+            List<String> tags = executionResult.getHealthCheckMetadata().getTags();
+            boolean hasTags = tags != null && tags.size() > 0 && StringUtils.isNotBlank(tags.get(0));
+            writer.print("<tr class=\"" + getClassForStatus(result.getStatus()) + "\">");
+            writer.print("<td><p title=\"" + StringEscapeUtils.escapeHtml(executionResult.getHealthCheckMetadata().getName()) + "\">"
+                    + StringEscapeUtils.escapeHtml(executionResult.getHealthCheckMetadata().getTitle()) + "");
+            if (hasTags) {
+                writer.println("<br/><span style='color:gray'>" + StringEscapeUtils.escapeHtml(StringUtils.join(tags, ", ")) + "</span>");
+            }
+            writer.println("</p></td>");
             writer.println("<td style='font-weight:bold;'>" + StringEscapeUtils.escapeHtml(result.getStatus().toString()) + "</td>");
             writer.println("<td>");
             boolean isFirst = true;
